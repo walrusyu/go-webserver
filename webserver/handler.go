@@ -4,7 +4,7 @@ import "net/http"
 
 type Handler interface {
 	Route(method string, pattern string, handler func(Context))
-	Handle(method string, pattern string, c Context)
+	ServeHTTP(c Context)
 }
 
 var _ Handler = &WebContextHandler{}
@@ -18,8 +18,8 @@ func (h *WebContextHandler) Route(method string, pattern string, handler func(Co
 	h.handlers[key] = handler
 }
 
-func (h *WebContextHandler) Handle(method string, pattern string, c Context) {
-	key := getKey(method, pattern)
+func (h *WebContextHandler) ServeHTTP(c Context) {
+	key := c.Key()
 	handler, success := h.handlers[key]
 	if !success {
 		c.WriteCode(http.StatusNotFound)

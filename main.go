@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	server := webserver.NewServer()
+	server := webserver.NewServer(webserver.TimeFilterBuilder)
 	server.Route(http.MethodGet, "/", home)
 	err := server.Start(":8080")
 	if err != nil {

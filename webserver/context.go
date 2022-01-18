@@ -11,6 +11,7 @@ type Context interface {
 	WriteJson(object interface{}) error
 	WriteStr(str string) error
 	WriteCode(code int)
+	Key() string
 }
 
 var _ Context = &WebContext{}
@@ -47,4 +48,9 @@ func (c *WebContext) WriteStr(str string) error {
 
 func (c *WebContext) WriteCode(code int) {
 	c.W.WriteHeader(code)
+}
+
+func (c *WebContext) Key() string {
+	return getKey(c.R.Method, c.R.URL.Path)
+
 }
