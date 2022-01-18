@@ -22,7 +22,7 @@ func (s *WebServer) Route(method string, pattern string, handler func(Context)) 
 
 func (s *WebServer) Start(address string) error {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		c := &WebContext{W: w, R: r}
+		c := NewContext(w, r)
 		s.root(c)
 	})
 	err := http.ListenAndServe(address, nil)
@@ -30,7 +30,7 @@ func (s *WebServer) Start(address string) error {
 }
 
 func NewServer(builders ...FilterBuilder) Server {
-	handler := NewHandler()
+	handler := NewHandler2()
 	root := handler.ServeHTTP
 
 	for i := len(builders) - 1; i >= 0; i-- {

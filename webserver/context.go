@@ -11,18 +11,19 @@ type Context interface {
 	WriteJson(object interface{}) error
 	WriteStr(str string) error
 	WriteCode(code int)
-	Key() string
+	W() http.ResponseWriter
+	R() *http.Request
 }
 
 var _ Context = &WebContext{}
 
 type WebContext struct {
-	W http.ResponseWriter
-	R *http.Request
+	w http.ResponseWriter
+	r *http.Request
 }
 
 func (c *WebContext) ReadJson(obj interface{}) error {
-	b, err := io.ReadAll(c.R.Body)
+	b, err := io.ReadAll(c.r.Body)
 	if err != nil {
 		return err
 	}
@@ -37,20 +38,26 @@ func (c *WebContext) WriteJson(object interface{}) error {
 		return err
 	}
 
-	_, err = c.W.Write(b)
+	_, err = c.w.Write(b)
 	return err
 }
 
 func (c *WebContext) WriteStr(str string) error {
-	_, err := c.W.Write([]byte(str))
+	_, err := c.w.Write([]byte(str))
 	return err
 }
 
 func (c *WebContext) WriteCode(code int) {
-	c.W.WriteHeader(code)
+	c.w.WriteHeader(code)
 }
 
-func (c *WebContext) Key() string {
-	return getKey(c.R.Method, c.R.URL.Path)
+func (c *WebContext) W() http.ResponseWriter {
+	return c.w
+}
+func (c *WebContext) R() *http.Request {
+	return c.r
+}
 
+func NewContext(w http.ResponseWriter, r *http.Request) Context {
+	return &WebContext{w: w, r: r}
 }
