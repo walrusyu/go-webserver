@@ -16,6 +16,6 @@ func TimeFilterBuilder(next Filter) Filter {
 		start := time.Now().Nanosecond()
 		next(c)
 		end := time.Now().Nanosecond()
-		fmt.Printf("webFilter takes %d nanoseconds", end-start)
+		fmt.Printf("webFilter takes %d nanoseconds \n", end-start)
 	}
 }

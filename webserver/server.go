@@ -1,19 +1,23 @@
 package webserver
 
 import (
+	"context"
 	"net/http"
+	"sync"
 )
 
 type Server interface {
 	Route(method string, pattern string, handler func(Context))
 	Start(address string) error
+	Shutdown(ctx context.Context) error
 }
 
 var _ Server = &WebServer{}
 
 type WebServer struct {
-	handler Handler
-	root    Filter
+	handler     Handler
+	root        Filter
+	contextPool sync.Pool
 }
 
 func (s *WebServer) Route(method string, pattern string, handler func(Context)) {
@@ -22,11 +26,18 @@ func (s *WebServer) Route(method string, pattern string, handler func(Context)) 
 
 func (s *WebServer) Start(address string) error {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		c := NewContext(w, r)
+		c := s.contextPool.Get().(Context)
+		c.SetW(w)
+		c.SetR(r)
 		s.root(c)
 	})
 	err := http.ListenAndServe(address, nil)
 	return err
+}
+
+func (s *WebServer) Shutdown(ctx context.Context) error {
+	//do something
+	return nil
 }
 
 func NewServer(builders ...FilterBuilder) Server {
@@ -38,5 +49,13 @@ func NewServer(builders ...FilterBuilder) Server {
 		root = b(root)
 	}
 
-	return &WebServer{handler: handler, root: root}
+	return &WebServer{
+		handler: handler,
+		root:    root,
+		contextPool: sync.Pool{
+			New: func() interface{} {
+				return NewContext(nil, nil)
+			},
+		},
+	}
 }

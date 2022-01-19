@@ -11,6 +11,8 @@ type Context interface {
 	WriteJson(object interface{}) error
 	WriteStr(str string) error
 	WriteCode(code int)
+	SetW(w http.ResponseWriter)
+	SetR(r *http.Request)
 	W() http.ResponseWriter
 	R() *http.Request
 }
@@ -49,6 +51,14 @@ func (c *WebContext) WriteStr(str string) error {
 
 func (c *WebContext) WriteCode(code int) {
 	c.w.WriteHeader(code)
+}
+
+func (c *WebContext) SetW(w http.ResponseWriter) {
+	c.w = w
+}
+
+func (c *WebContext) SetR(r *http.Request) {
+	c.r = r
 }
 
 func (c *WebContext) W() http.ResponseWriter {
